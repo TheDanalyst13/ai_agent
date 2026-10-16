@@ -1,0 +1,50 @@
+import os
+
+def write_file(working_directory: str, file_path: str, content: str) -> str:
+    try:    
+        working_dir_abs = os.path.abspath(working_directory)
+        target_dir = os.path.normpath(os.path.join(working_dir_abs, file_path))
+        valid_target_dir = os.path.commonpath([working_dir_abs, target_dir]) == working_dir_abs
+    
+        if not valid_target_dir:
+            return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
+        elif os.path.isdir(target_dir):
+            return f'Error: Cannot write to "{file_path}" as it is a directory'
+        else:
+            parent_dir = os.path.dirname(target_dir)
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
+            with open(target_dir, "w") as f:
+                f.write(content)
+            return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+
+    except Exception as e:
+        return f"Error: {e}"
+
+
+schema_write_file = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "Creates a file and fills it with content",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "working_directory": {
+                    "type": "string",
+                },
+                "file_path": {
+                    "type": "string",
+                },
+                "content": {
+                    "type": "string",
+                }
+            },
+            "required": [
+                "working_directory",
+                "file_path",
+                "content",
+            ],
+        },
+    },
+}
